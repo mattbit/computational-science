@@ -120,7 +120,7 @@ py.plot(Figure(data=data, layout=lyt), filename="discrete_sampling_01.html",
 """
 
 class SamplingBenchmark(object):
-    """Benchmark different Samplers."""
+    """Benchmark a collection of Samplers."""
     def __init__(self, pmf_generator, samplers, name="benchmark",
                 pmf_num=100, sample_size=1000):
         self.pmf_generator = pmf_generator
@@ -136,94 +136,61 @@ class SamplingBenchmark(object):
 
 
     def run(self):
-        with ProcessPoolExecutor(max_workers=len(self.samplers)) as executor:
-            futures = np.empty(len(self.samplers), dtype=object)
+        """Benchmark the samplers and plot the execution time."""
+        data = []
 
-            for i, sampler in enumerate(self.samplers):
-                futures[i] = executor.submit(self._benchmark_sampler, sampler)
+        for i, sampler in enumerate(self.samplers):
+            # Benchmark concurrently (returns a itertools.chain object)
+            times = self._benchmark_sampler(sampler)
+            
+            data.append(Scatter(
+                x=self.ns,
+                y=list(times),
+                name=self.samplers[i].__name__
+            ))
 
-
-            data = []
-
-            for i in range(len(self.samplers)):
-                data.append(Scatter(
-                    x=self.ns,
-                    y=futures[i].result(),
-                    name=self.samplers[i].__name__
-                ))
-
-            py.plot(data, filename="{}.html".format(self.name), auto_open=False)
+        py.plot(data, filename="benchmark_{}.html".format(self.name), auto_open=False)
 
 
     def _benchmark_sampler(self, sampler):
-        time = np.zeros(len(self.ns))
+        # We go concurrent to improve performance.
+        with ProcessPoolExecutor() as executor:
+            fn = ft.partial(self._benchmark_n_items, sampler=sampler)
+            times = executor.map(fn, self.ns)
 
-        for i, n_items in enumerate(self.ns):
-            for _ in range(self.pmf_num):
-                p = self.pmf_generator(n_items)
-                s = sampler(p)
-                sample = ft.partial(s.sample, self.sample_size)
-                time[i] += timeit.timeit(sample, number=1)
+        return times
 
-            print("{}: n_items = {} completed".format(sampler.__name__, n_items))
+
+    def _benchmark_n_items(self, n_items, sampler):
+        time = 0
+        for _ in range(self.pmf_num):
+            p = self.pmf_generator(n_items)
+            s = sampler(p)
+            sample = ft.partial(s.sample, self.sample_size)
+            time += timeit.timeit(sample, number=1)
+
+        print("{}: n = {} completed.".format(sampler.__name__, n_items))
 
         return time
 
 
 SAMPLE_SIZE = 1000
 
-bench_uniform = SamplingBenchmark(generate_uniform_pmf,
-                                 [AcceptRejectSampler, TowerSampler],
-                                 name="uniform", sample_size=SAMPLE_SIZE)
+samplers = [AcceptRejectSampler, TowerSampler]
 
-bench_uniform.run()
-
-
-'''
-
-ar_time = np.zeros(len(ns))
-ts_time = np.zeros(len(ns))
-
-for i, n_items in enumerate(ns):
-    p = generate_uniform_pmf(n_items)
-
-    ar = AcceptRejectSampler(p)
-    ar_time[i] = timeit.timeit(ft.partial(ar.sample, SAMPLE_SIZE), number=1)
-    
-    ts = TowerSampler(p)
-    ts_time[i] = timeit.timeit(ft.partial(ts.sample, SAMPLE_SIZE), number=1)
-
-    print("unif: n_items = {} completed.".format(n_items))
-
-py.plot([
-    Scatter(x=ns, y=ar_time, name="Accept/Reject"),
-    Scatter(x=ns, y=ts_time, name="Tower (with binary search)")
-], filename="exec_time_01.html", auto_open=False)
+bm_uniform = SamplingBenchmark(generate_uniform_pmf, samplers,
+                              name="uniform", sample_size=SAMPLE_SIZE)
+bm_uniform.run()
 
 """
 4. Repeat this exercise but now sample the ri from an exponential
    distribution. How does this time grows with nitem in the case
    of the “accept/reject” procedure? Why the difference?
 """
-ar_time = np.zeros(len(ns))
-ts_time = np.zeros(len(ns))
 
-for i, n_items in enumerate(ns):
-    p = generate_exponential_pmf(n_items)
-
-    ar = AcceptRejectSampler(p)
-    ar_time[i] = timeit.timeit(ft.partial(ar.sample, SAMPLE_SIZE), number=1)
-    
-    ts = TowerSampler(p)
-    ts_time[i] = timeit.timeit(ft.partial(ts.sample, SAMPLE_SIZE), number=1)
-
-    print("expo: n_items = {} completed.".format(n_items))
-
-
-py.plot([
-    Scatter(x=ns, y=ar_time, name="Accept/Reject"),
-    Scatter(x=ns, y=ts_time, name="Tower (with binary search)")
-], filename="exec_time_02.html", auto_open=False)
+bm_exponential = SamplingBenchmark(generate_exponential_pmf, samplers,
+                                  name="exponential", sample_size=SAMPLE_SIZE)
+bm_exponential.run()
 
 """
 5. Repeat this exercise but now sample the ri by writing
@@ -232,29 +199,13 @@ py.plot([
    Compute numerically how the time now grows with n_items in the case
    of the “accept/reject” procedure.
 """
-ar_time = np.zeros(len(ns))
-ts_time = np.zeros(len(ns))
 
-for i, n_items in enumerate(ns):
-    p = generate_sqrt_pmf(n_items)
-
-    ar = AcceptRejectSampler(p)
-    ar_time[i] = timeit.timeit(ft.partial(ar.sample, SAMPLE_SIZE), number=1)
-    
-    ts = TowerSampler(p)
-    ts_time[i] = timeit.timeit(ft.partial(ts.sample, SAMPLE_SIZE), number=1)
-
-    print("sqrt: n_items = {} completed.".format(n_items))
-
-py.plot([
-    Scatter(x=ns, y=ar_time, name="Accept/Reject"),
-    Scatter(x=ns, y=ts_time, name="Tower (with binary search)")
-], filename="exec_time_03.html", auto_open=False)
-
+bm_sqrt = SamplingBenchmark(generate_sqrt_pmf, samplers,
+                              name="sqrt", sample_size=SAMPLE_SIZE)
+bm_sqrt.run()
 
 """
 6. What do you conclude on these two methods to sample
    discrete distributions?
 """
 # @todo
-'''
