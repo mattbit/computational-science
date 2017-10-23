@@ -1,0 +1,27 @@
+\documentclass[10pt,a4paper]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{tikz, pgfplots}
+\usepackage{filecontents}
+\usepackage{verbatim}
+\usepgfplotslibrary{fillbetween}
+\usepackage{url}
+
+\begin{document}
+
+Let $F(x)$ be the integral of $f(x)=x$. 
+A constant density of points in the region $(y<x, \ y>0,\ x\in[0,1])$ means first of all that for any fixed $x_{i}$ the number of points $N_{i}$ in the interval$ (x_{i}, x_{i}+\Delta)$ must be proportional to the area measured by $F(x_{i}+\Delta)-F(x_{i})$ then, inside each bin, the $N_{i}$ points must be uniformly distributed over the height of the bin i.e. between 0 and $\sim f_{i}$. \\
+We will proove that the probability distribution of the sample along $x$ must be proportional to $f(x)$.
+The uniform-density condition reads:
+\begin{equation}
+\dfrac{F(x_{i}+\Delta)-F(x_{i})}{N_{i}}=const
+\end{equation}
+If we set the value of the constant to be equal to $1/N_{tot}$, where $N_{tot}$ is the total number of points, we have in the $\lim_{\Delta\to 0}, \lim_{N\to\infty} $:
+\begin{equation}
+\dfrac{F(x_{i}+\Delta)-F(x_{i})}{\Delta}\rightarrow f(x), \quad \dfrac{N_{i}}{N\Delta}\rightarrow p(x)
+\end{equation}
+\end{document}

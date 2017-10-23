@@ -1,0 +1,58 @@
+\documentclass[10pt,a4paper]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{tikz, pgfplots}
+\usepackage{filecontents}
+\usepackage{verbatim}
+\usepgfplotslibrary{fillbetween}
+\usepackage{url}
+
+
+\author{D. Doimo}
+
+\begin{document}
+Set $g(x)=(1-e^{-1})x^{1/2}$, $f(x)=1-e^{-x}$ show that $f(x) \leq g(x) \quad \forall x\in[0,1]$.\vspace{5mm}
+$Dim$\\
+$f,g \subset C^{\infty}(0,1)$ and $f(0)=g(0)=0$,  $f(1)=g(1)=1-e^{-1}$; if $f(x) \leq g(x) \quad \forall x\in[0,1]$, these points must be the only one iin which the two functions are equal in $(0,1)$. \\
+For the Cauchy's mean value theorem, for any ${a,b}$ for which$f(a)=g(a)$ and $f(b)=g(b)$ must exist at least a $c\in(a,b)$ that realizes $f'(c)=g'(c)$. We will now proove that in $(0,1)$ there is only one $c$ that realizes the equality of the first derivatives and therefore other points for which $f=g$ can't exist.\\
+$f'(x)=g'(x)$ gives:
+\begin{equation}
+e^{-x}=\dfrac{1-e^{-1}}{2x^{1/2}}\quad \Rightarrow \quad x^{1/2}e^{-x}=\dfrac{1-e^{-1}}{2}\doteq h(x)
+\end{equation}
+Now the following inequalities:
+\begin{equation}
+h(0)=0<(1-e^{-1})/2, \quad h(1)=e^{-1}>(1-e^{-1})/2
+\end{equation}
+(the second being equivalent to $(3>e)$) imply, for the continuity of $h$, the existence of at least one point of intersection between $h$ and $(1-e^{-1})/2$.\\
+We will show at the end of the proof that $h$ is concave in $(0,1)$. Given this let's choose the first $x^{*}$ for which $h(x)=(1-e^{-1})/2$. \\
+Then by definition of concavity we have:
+
+\begin{equation}
+h(x^{*}+(1-x^{*})t)> h(x^{*})+\dfrac{h(1)-h(x^{*})}{1-x^{*}}t \quad \forall t \in [0,1]
+\end{equation}
+
+but we have:
+\begin{equation}
+h(x^{*})=\dfrac{1-e^{-1}}{2}, \quad \dfrac{h(1)-h(x^{*})}{1-x^{*}}>0
+\end{equation}
+therefore
+
+\begin{equation}
+h(x)>\dfrac{1-e^{-1}}{2} \ \forall x \in(x^{*},1]
+\end{equation}
+
+and we conclude that there exist only one point $c\equiv x^{*}$ in $(0,1)$ for which $f'(c)=g'(c)$.\\
+Finally $h$ is indeed concave since:
+
+\begin{equation}
+h''(x)=\dfrac{e^{-x}}{x^{1/2}}\left(-1+x-\dfrac{1}{4x}\right)<0 \ \forall x\in[0,1]
+\end{equation}
+
+
+
+\end{document}
+
