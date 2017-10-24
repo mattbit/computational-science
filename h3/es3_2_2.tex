@@ -13,6 +13,7 @@
 
 \begin{document}
 
+\textit{Explain why sampling x from $p(x)=2x$ and then y unifomly in  [0, x] generates points uniformly distributed below the line x for x $\in [0,1]$} \\
 Let $F(x)$ be the integral of $f(x)=x$. 
 A constant density of points in the region $(y<x, \ y>0,\ x\in[0,1])$ means first of all that for any fixed $x_{i}$ the number of points $N_{i}$ in the interval$ (x_{i}, x_{i}+\Delta)$ must be proportional to the area measured by $F(x_{i}+\Delta)-F(x_{i})$ then, inside each bin, the $N_{i}$ points must be uniformly distributed over the height of the bin i.e. between 0 and $\sim f_{i}$. \\
 We will proove that the probability distribution of the sample along $x$ must be proportional to $f(x)$.
@@ -23,5 +24,17 @@ The uniform-density condition reads:
 If we set the value of the constant to be equal to $1/N_{tot}$, where $N_{tot}$ is the total number of points, we have in the $\lim_{\Delta\to 0}, \lim_{N\to\infty} $:
 \begin{equation}
 \dfrac{F(x_{i}+\Delta)-F(x_{i})}{\Delta}\rightarrow f(x), \quad \dfrac{N_{i}}{N\Delta}\rightarrow p(x)
+\end{equation} \\
+
+\textit{Why the error is lower on average?}\\
+Given a $f(x) \geq 0$ the accept-reject method actually computes an estimate of the mean $\theta$ of the bernuolli random variable that is set equal to 1 if the point fall below the graph of the function $f(x)$, and 0 otherwise. Knowing the total area $A$ in which the points are thrown the integral of the function is then $I=A\theta$. The estimate of $\theta$ is computed through the empirical average of the sample, which is an unbiased estimator with standard deviation $\sigma=(\theta(1-\theta)/N)^{1/2}$, we have:
+\begin{equation}
+\hat{\theta}=\theta \pm \sqrt{\dfrac{\theta(1-\theta)}{N}}
+\end{equation}
+If $\theta$ is of order 1, as reasonably should happen, then the average error at fixed $N$ is proportional to the standard deviation of the estimator and decreases as $\theta$ increases, or as the sample region approaches the function $f(x)$. This is what happens changing the rectangle into the triangle: the area of the triangular region is colser to the integral to be estimated, therefore the average error is lower than that of the rectangular sample area.\\
+For completeness we can say that the average error is a decreasing function of $\theta$ in all the interval $[0,1]$ and is not proportional to $\sigma$.
+What is usually referred as precision is the realtive error which is:
+\begin{equation}
+e=\sqrt{\dfrac{1-\theta}{A^{2}\theta N}}
 \end{equation}
 \end{document}
