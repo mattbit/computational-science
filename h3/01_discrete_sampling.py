@@ -14,15 +14,15 @@ class Sampler(object):
         return np.array([self._sample() for _ in range(size)])
 
     def _sample(self):
-      raise Exception("Sampler: _sample must be implemented!")
+        raise Exception("Sampler: _sample must be implemented!")
 
 
 class AcceptRejectSampler(Sampler):
-    
+
     def __init__(self, p):
         self.p = p
         self.p_max = p.max()
-    
+
     def _sample(self):
         while True:
             # Choose one element randomly
@@ -32,7 +32,7 @@ class AcceptRejectSampler(Sampler):
             r = np.random.random() * self.p_max
 
             if r < self.p[i]:
-                return i        
+                return i
 
 
 class TowerSampler(Sampler):
@@ -45,8 +45,7 @@ class TowerSampler(Sampler):
         self.c = np.zeros(len(p))
         self.c[0] = p[0]
         for i in range(1, len(p)):
-            self.c[i] = self.c[i-1] + p[i]
-
+            self.c[i] = self.c[i - 1] + p[i]
 
     def _sample(self):
         r = np.random.random()
@@ -58,7 +57,7 @@ def generate_uniform_pmf(size=5):
     r = np.random.random(size)
 
     return r / np.sum(r)
-    
+
 
 def generate_exponential_pmf(size=5):
     r = -np.log(np.random.random(size))
@@ -67,7 +66,7 @@ def generate_exponential_pmf(size=5):
 
 
 def generate_sqrt_pmf(size=5):
-    r = 1./np.sqrt(np.random.random(size))
+    r = 1. / np.sqrt(np.random.random(size))
 
     return r / np.sum(r)
 
@@ -121,10 +120,12 @@ py.plot(Figure(data=data, layout=lyt), filename="discrete_sampling_01.html",
    d) The tower sampling. 
 """
 
+
 class SamplingBenchmark(object):
     """Benchmark a collection of Samplers."""
+
     def __init__(self, pmf_generator, samplers, name="benchmark",
-                sample_size=100000):
+                 sample_size=100000):
         self.pmf_generator = pmf_generator
         self.samplers = samplers
         self.ns = np.concatenate((
@@ -137,7 +138,6 @@ class SamplingBenchmark(object):
         self.sample_size = sample_size
         self.pmfs = np.empty(len(self.ns), dtype=object)
 
-
     def run(self):
         """Benchmark the samplers and plot the execution time."""
         data = []
@@ -148,24 +148,23 @@ class SamplingBenchmark(object):
             for sampler in self.samplers:
                 fn = ft.partial(self._benchmark, sampler=sampler)
                 times = executor.map(fn, self.pmfs)
-                
+
                 data.append(Scatter(
                     x=self.ns,
                     y=list(times),
                     name=sampler.__name__
                 ))
 
-        py.plot(data, filename="benchmark_{}.html".format(self.name), auto_open=False)
-
+        py.plot(data, filename="benchmark_{}.html".format(
+            self.name), auto_open=False)
 
     def _init_pmfs(self):
         for i, n_items in enumerate(self.ns):
             self.pmfs[i] = self.pmf_generator(n_items)
 
-
     def _benchmark(self, pmf, sampler):
         start_time = time.process_time()
-        
+
         s = sampler(pmf)
         s.sample(self.sample_size)
 
@@ -181,7 +180,7 @@ SAMPLE_SIZE = 100000
 samplers = [AcceptRejectSampler, TowerSampler]
 
 bm_uniform = SamplingBenchmark(generate_uniform_pmf, samplers,
-                              name="uniform", sample_size=SAMPLE_SIZE)
+                               name="uniform", sample_size=SAMPLE_SIZE)
 bm_uniform.run()
 
 
@@ -192,7 +191,7 @@ bm_uniform.run()
 """
 
 bm_exponential = SamplingBenchmark(generate_exponential_pmf, samplers,
-                                  name="exponential", sample_size=SAMPLE_SIZE)
+                                   name="exponential", sample_size=SAMPLE_SIZE)
 bm_exponential.run()
 
 """
@@ -204,7 +203,7 @@ bm_exponential.run()
 """
 
 bm_sqrt = SamplingBenchmark(generate_sqrt_pmf, samplers,
-                              name="sqrt", sample_size=SAMPLE_SIZE)
+                            name="sqrt", sample_size=SAMPLE_SIZE)
 bm_sqrt.run()
 
 """
