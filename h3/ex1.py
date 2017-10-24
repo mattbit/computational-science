@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import time
 import bisect
-import timeit
 import numpy as np
 import functools as ft
 import plotly.offline as py
 from plotly.graph_objs import Histogram, Bar, Scatter, Figure, Layout
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
+
 
 class Sampler(object):
     def sample(self, size=1):
@@ -122,65 +123,66 @@ py.plot(Figure(data=data, layout=lyt), filename="discrete_sampling_01.html",
 class SamplingBenchmark(object):
     """Benchmark a collection of Samplers."""
     def __init__(self, pmf_generator, samplers, name="benchmark",
-                pmf_num=100, sample_size=1000):
+                sample_size=100000):
         self.pmf_generator = pmf_generator
         self.samplers = samplers
         self.ns = np.concatenate((
             np.arange(1, 10, step=1),
-            np.arange(10, 100, step=10),
-            np.arange(100, 1001, step=100)
+            np.arange(10, 1000, step=10),
+            np.arange(10, 100000, step=500)
         ))
+
         self.name = name
-        self.pmf_num = pmf_num
         self.sample_size = sample_size
+        self.pmfs = np.empty(len(self.ns), dtype=object)
 
 
     def run(self):
         """Benchmark the samplers and plot the execution time."""
         data = []
 
-        for i, sampler in enumerate(self.samplers):
-            # Benchmark concurrently (returns a itertools.chain object)
-            times = self._benchmark_sampler(sampler)
-            
-            data.append(Scatter(
-                x=self.ns,
-                y=list(times),
-                name=self.samplers[i].__name__
-            ))
+        self._init_pmfs()
+
+        with ProcessPoolExecutor() as executor:
+            for sampler in self.samplers:
+                fn = ft.partial(self._benchmark, sampler=sampler)
+                times = executor.map(fn, self.pmfs)
+                
+                data.append(Scatter(
+                    x=self.ns,
+                    y=list(times),
+                    name=sampler.__name__
+                ))
 
         py.plot(data, filename="benchmark_{}.html".format(self.name), auto_open=False)
 
 
-    def _benchmark_sampler(self, sampler):
-        # We go concurrent to improve performance.
-        with ProcessPoolExecutor() as executor:
-            fn = ft.partial(self._benchmark_n_items, sampler=sampler)
-            times = executor.map(fn, self.ns)
-
-        return times
+    def _init_pmfs(self):
+        for i, n_items in enumerate(self.ns):
+            self.pmfs[i] = self.pmf_generator(n_items)
 
 
-    def _benchmark_n_items(self, n_items, sampler):
-        time = 0
-        for _ in range(self.pmf_num):
-            p = self.pmf_generator(n_items)
-            s = sampler(p)
-            sample = ft.partial(s.sample, self.sample_size)
-            time += timeit.timeit(sample, number=1)
+    def _benchmark(self, pmf, sampler):
+        start_time = time.process_time()
+        
+        s = sampler(pmf)
+        s.sample(self.sample_size)
 
-        print("{}: n = {} completed.".format(sampler.__name__, n_items))
+        end_time = time.process_time()
 
-        return time
+        print("{}: n = {} completed.".format(sampler.__name__, len(pmf)))
+
+        return end_time - start_time
 
 
-SAMPLE_SIZE = 1000
+SAMPLE_SIZE = 100000
 
 samplers = [AcceptRejectSampler, TowerSampler]
 
 bm_uniform = SamplingBenchmark(generate_uniform_pmf, samplers,
                               name="uniform", sample_size=SAMPLE_SIZE)
 bm_uniform.run()
+
 
 """
 4. Repeat this exercise but now sample the ri from an exponential
