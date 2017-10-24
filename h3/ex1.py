@@ -21,14 +21,15 @@ class AcceptRejectSampler(Sampler):
     
     def __init__(self, p):
         self.p = p
+        self.p_max = p.max()
     
     def _sample(self):
         while True:
-            # Choose one element randomly 
+            # Choose one element randomly
             i = np.random.choice(len(self.p))
 
             # Accept/reject
-            r = np.random.random() * np.max(self.p)
+            r = np.random.random() * self.p_max
 
             if r < self.p[i]:
                 return i        
