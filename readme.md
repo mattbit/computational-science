@@ -7,7 +7,10 @@ Welcome!
   [Source](https://github.com/mattbit/computational-science/blob/master/h2/Homework%202.ipynb)
 
 - **Homework 3**  
-  *(work in progress)*
+  [Index](https://github.com/mattbit/computational-science/tree/master/h3)
+
+- **Homework 4**  
+  *(WIP)*
 
 ------------------------
 Time for a random quote:
