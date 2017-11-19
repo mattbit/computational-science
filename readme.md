@@ -10,7 +10,7 @@ Welcome!
   [Index](https://github.com/mattbit/computational-science/tree/master/h3)
 
 - **Homework 4**  
-  *(WIP)*
+  [Index](https://github.com/mattbit/computational-science/tree/master/h4)
 
 ------------------------
 Time for a random quote:
